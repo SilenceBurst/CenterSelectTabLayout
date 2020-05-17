@@ -20,16 +20,12 @@ val exampleAdapter = ExampleAdapter()
 centerSelectLayout.adapter = exampleAdapter
 ```
 
-- init adapter ( you should implement two function, because may be you will call centerSelectLayout.scrollToPosition() )
+- init adapter ( you should implement this function, because may be you will call centerSelectLayout.scrollToPosition() )
 ```
 /**
  * Return half of select Tab width px
  */
-abstract fun getHalfOfSelectTabWidth(): Int
-/**
- * Return total offset of scrollTo the position
- */
-abstract fun getDirectScrollTotalOffset(): Int
+abstract fun getHalfOfSelectTabWidth(scrollPosition: Int): Int
 ```
 
 - init listener ( set CenterSelectTabLayoutListener refresh data when tab select )
@@ -41,7 +37,6 @@ exampleAdapter.centerSelectTabLayoutListener = object :
     ) {
     override fun onTabSelect(position: Int) {
         super.onTabSelect(position)
-
     }
 }
 ```
@@ -49,6 +44,7 @@ exampleAdapter.centerSelectTabLayoutListener = object :
 - scrollToPosition or smoothScrollToPosition ( after load data or other case need scroll or smoothScroll to position )
 ```
 centerSelectLayout.smoothScrollToPosition(10)
+//centerSelectLayout.scrollToPosition(10)
 ```
 
 **Contributing**

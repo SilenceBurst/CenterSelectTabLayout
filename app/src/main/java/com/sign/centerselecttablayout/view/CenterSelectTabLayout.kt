@@ -25,7 +25,6 @@ class CenterSelectTabLayout(context: Context, attrs: AttributeSet?) : RecyclerVi
         }
     var preScrollToPosition = -1
     var scrollTargetPosition = -1
-    var totalOffsetX = 0f
     var centerX = 0
     var centerSelectLayoutManager: CenterSelectLayoutManager
     var centerSelectTabLayoutListener: CenterSelectTabLayoutAdapter.CenterSelectTabLayoutListener? =
@@ -37,7 +36,6 @@ class CenterSelectTabLayout(context: Context, attrs: AttributeSet?) : RecyclerVi
         addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
-                totalOffsetX += dx
                 if (dx != 0) {
                     if (scrollState == SCROLL_STATE_DRAGGING) {
                         //如果用户打断滚动 将目标滚动下标重置
@@ -108,14 +106,17 @@ class CenterSelectTabLayout(context: Context, attrs: AttributeSet?) : RecyclerVi
     }
 
     override fun scrollToPosition(position: Int) {
-        if (centerSelectTabLayoutAdapter != null && position >= 0 && position < centerSelectTabLayoutAdapter!!.itemCount) {
-            scrollTargetPosition = position
-            val offset = centerX - centerSelectTabLayoutAdapter!!.highLightPosition
-            centerSelectLayoutManager.scrollToPositionWithOffset(position, offset)
-            val directScrollTotalOffset =
-                centerSelectTabLayoutAdapter!!.getDirectScrollTotalOffset()
-            if (directScrollTotalOffset > centerX) {
-                totalOffsetX = (directScrollTotalOffset - centerX).toFloat()
+        if (centerX == 0) {
+            post {
+                if (centerSelectTabLayoutAdapter != null && position >= 0 && position < centerSelectTabLayoutAdapter!!.itemCount) {
+                    val offset = centerX -
+                            centerSelectTabLayoutAdapter!!.getHalfOfSelectTabWidth(position)
+                    centerSelectLayoutManager.scrollToPositionWithOffset(position, offset)
+                    centerSelectTabLayoutAdapter!!.highLightPosition = position
+                    centerSelectTabLayoutListener?.onTabSelect(
+                        position
+                    )
+                }
             }
         }
     }
@@ -160,12 +161,7 @@ class CenterSelectTabLayout(context: Context, attrs: AttributeSet?) : RecyclerVi
             boxEnd: Int,
             snapPreference: Int
         ): Int {
-            //首部的几个item可能无法滚动到recyclerView中心位置
-            return if (totalOffsetX + viewEnd < boxStart + (boxEnd - boxStart) / 2) {
-                0
-            } else {
-                boxStart + (boxEnd - boxStart) / 2 - (viewStart + (viewEnd - viewStart) / 2)
-            }
+            return boxStart + (boxEnd - boxStart) / 2 - (viewStart + (viewEnd - viewStart) / 2)
         }
     }
 

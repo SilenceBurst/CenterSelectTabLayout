@@ -9,7 +9,6 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.sign.centerselecttablayout.adapter.CenterSelectTabLayoutAdapter
-import com.sign.centerselecttablayout.util.dp
 import com.sign.centerselecttablayout.util.sp
 import com.sign.centerselecttablayout.view.CenterSelectTabLayout
 
@@ -50,34 +49,23 @@ class MainActivity : AppCompatActivity() {
             }
         }
         cstlCategory.adapter = exampleAdapter
+//        cstlCategory.scrollToPosition(5)
         cstlCategory.smoothScrollToPosition(10)
     }
 
-    class ExampleAdapter :
+    inner class ExampleAdapter :
         CenterSelectTabLayoutAdapter() {
 
         private val paint: Paint = Paint(Paint.ANTI_ALIAS_FLAG)
 
         init {
             paint.textSize = 16f.sp
+            paint.typeface = Typeface.defaultFromStyle(Typeface.BOLD)
         }
 
-        override fun getHalfOfSelectTabWidth(): Int {
-            paint.typeface = Typeface.defaultFromStyle(Typeface.BOLD)
-            val selectLabelWidth = paint.measureText(items[highLightPosition])
+        override fun getHalfOfSelectTabWidth(scrollPosition: Int): Int {
+            val selectLabelWidth = paint.measureText(items[scrollPosition])
             return (selectLabelWidth / 2).toInt()
-        }
-
-        override fun getDirectScrollTotalOffset(): Int {
-            paint.typeface = Typeface.defaultFromStyle(Typeface.NORMAL)
-            var totalOffsetXTemp = 0
-            for (i in 0 until highLightPosition) {
-                totalOffsetXTemp += (20f.dp + paint.measureText(items[i])).toInt()
-            }
-            paint.typeface = Typeface.defaultFromStyle(Typeface.BOLD)
-            val selectLabelWidth = paint.measureText(items[highLightPosition]).toInt()
-            totalOffsetXTemp += selectLabelWidth / 2
-            return totalOffsetXTemp
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {

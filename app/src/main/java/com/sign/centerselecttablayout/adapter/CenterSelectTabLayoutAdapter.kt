@@ -9,7 +9,7 @@ import com.sign.centerselecttablayout.view.CenterSelectTabLayout
  *
  * @author admin
  */
-abstract class CenterSelectTabLayoutAdapter() :
+abstract class CenterSelectTabLayoutAdapter :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     var centerSelectTabLayoutListener: CenterSelectTabLayoutListener? = null
@@ -22,12 +22,7 @@ abstract class CenterSelectTabLayoutAdapter() :
     /**
      * Return half of select Tab width px
      */
-    abstract fun getHalfOfSelectTabWidth(): Int
-
-    /**
-     * Return total offset of scrollTo the position
-     */
-    abstract fun getDirectScrollTotalOffset(): Int
+    abstract fun getHalfOfSelectTabWidth(scrollPosition: Int): Int
 
     open class CenterSelectTabLayoutListener(
         private val centerSelectTabLayout: CenterSelectTabLayout,
