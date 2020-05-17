@@ -1,5 +1,8 @@
 # CenterSelectTabLayout
 
+**Screens**
+![](https://github.com/SilenceBurst/CenterSelectTabLayout/blob/master/gif/example.gif)
+
 **Features**
 - auto select center tab when scrolling
 - after scroll, select tab in the center of layout
