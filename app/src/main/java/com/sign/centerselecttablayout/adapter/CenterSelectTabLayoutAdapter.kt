@@ -27,9 +27,14 @@ abstract class CenterSelectTabLayoutAdapter() :
         private val centerSelectTabLayout: CenterSelectTabLayout,
         private val centerSelectTabLayoutAdapter: CenterSelectTabLayoutAdapter
     ) {
+        init {
+            centerSelectTabLayout.centerSelectTabLayoutListener = this
+        }
+
         open fun onTabSelect(position: Int) {
-            centerSelectTabLayoutAdapter.highLightPosition = position
-            centerSelectTabLayout.onAdapterItemClick(position)
+            if (centerSelectTabLayoutAdapter.highLightPosition != position) {
+                centerSelectTabLayout.onAdapterItemClick(position)
+            }
         }
     }
 }

@@ -46,7 +46,7 @@ class MainActivity : AppCompatActivity() {
             override fun onTabSelect(position: Int) {
                 super.onTabSelect(position)
                 tvClickHistory.append(items[position])
-                tvClickHistory.append("\n")
+                tvClickHistory.append("     ")
             }
         }
         cstlCategory.adapter = exampleAdapter

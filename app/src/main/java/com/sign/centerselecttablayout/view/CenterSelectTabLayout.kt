@@ -6,7 +6,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.LinearSmoothScroller
 import androidx.recyclerview.widget.RecyclerView
 import com.sign.centerselecttablayout.adapter.CenterSelectTabLayoutAdapter
-import com.sign.centerselecttablayout.util.getScreenWidth
+import kotlin.math.abs
 
 /**
  * Created by CaoYongSheng
@@ -23,26 +23,26 @@ class CenterSelectTabLayout(context: Context, attrs: AttributeSet?) : RecyclerVi
             field = value
             centerSelectLayoutManager.reverseLayout = layoutMangerReverse
         }
-    var preHighLightPosition = -1
-    var targetPosition = -1
+    var preScrollToPosition = -1
+    var scrollTargetPosition = -1
     var totalOffsetX = 0f
     var centerX = 0
     var centerSelectLayoutManager: CenterSelectLayoutManager
-    var centerSelectTabLayoutListener: CenterSelectTabLayoutAdapter.CenterSelectTabLayoutListener? = null
+    var centerSelectTabLayoutListener: CenterSelectTabLayoutAdapter.CenterSelectTabLayoutListener? =
+        null
     var centerSelectTabLayoutAdapter: CenterSelectTabLayoutAdapter? = null
 
     init {
-        centerX = getScreenWidth() / 2
         centerSelectLayoutManager = CenterSelectLayoutManager(context, layoutMangerReverse)
         addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
                 totalOffsetX += dx
                 if (dx != 0) {
-                    //如果用户打断滚动 将目标滚动下标重置
-                    if (targetPosition != -1) {
-                        if (scrollState == SCROLL_STATE_DRAGGING) {
-                            targetPosition = -1
+                    if (scrollState == SCROLL_STATE_DRAGGING) {
+                        //如果用户打断滚动 将目标滚动下标重置
+                        if (scrollTargetPosition != -1) {
+                            scrollTargetPosition = -1
                         }
                     }
                     val firstVisibleItemPosition =
@@ -64,31 +64,35 @@ class CenterSelectTabLayout(context: Context, attrs: AttributeSet?) : RecyclerVi
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 super.onScrollStateChanged(recyclerView, newState)
                 if (newState == SCROLL_STATE_IDLE) {
-                    val firstVisibleItemPosition =
-                        centerSelectLayoutManager.findFirstVisibleItemPosition()
-                    val lastVisibleItemPosition =
-                        centerSelectLayoutManager.findLastVisibleItemPosition()
-                    if (targetPosition != -1
-                        && targetPosition >= firstVisibleItemPosition
-                        && targetPosition <= lastVisibleItemPosition
-                    ) {
-                        targetPosition = -1
-                        centerSelectTabLayoutAdapter?.highLightPosition = targetPosition
-                    }
                     if (centerSelectTabLayoutAdapter != null) {
-                        val currentHighLightPosition =
-                            centerSelectTabLayoutAdapter!!.highLightPosition
-                        if (preHighLightPosition != currentHighLightPosition) {
-                            val currentHighLightView =
-                                centerSelectLayoutManager.findViewByPosition(
-                                    currentHighLightPosition
-                                )
-                            if (currentHighLightView != null) {
-                                if ((currentHighLightView.right - currentHighLightView.left) / 2f > CAN_IGNORE_OFFSET) {
-                                    smoothScrollToPosition(currentHighLightPosition)
-                                }
+                        val scrollToPosition: Int
+                        if (scrollTargetPosition != -1) {
+                            scrollToPosition = scrollTargetPosition
+                            centerSelectTabLayoutAdapter!!.highLightPosition =
+                                scrollTargetPosition
+                            scrollTargetPosition = -1
+                        } else {
+                            scrollToPosition = centerSelectTabLayoutAdapter!!.highLightPosition
+                        }
+                        val currentHighLightView =
+                            centerSelectLayoutManager.findViewByPosition(scrollToPosition)
+                        if (currentHighLightView != null) {
+                            val currentHighLightViewCenterX = currentHighLightView.left +
+                                    (currentHighLightView.right - currentHighLightView.left) / 2
+                            if (abs(currentHighLightViewCenterX - centerX) > CAN_IGNORE_OFFSET
+                                && ((currentHighLightViewCenterX > centerX
+                                        && canScrollHorizontally(1))
+                                        || (currentHighLightViewCenterX < centerX
+                                        && canScrollHorizontally(-1)))
+                            ) {
+                                smoothScrollToPosition(scrollToPosition)
                             }
-                            centerSelectTabLayoutListener?.onTabSelect(currentHighLightPosition)
+                        }
+                        if (scrollToPosition != preScrollToPosition) {
+                            preScrollToPosition = scrollToPosition
+                            centerSelectTabLayoutListener?.onTabSelect(
+                                scrollToPosition
+                            )
                         }
                     }
                 }
@@ -97,13 +101,15 @@ class CenterSelectTabLayout(context: Context, attrs: AttributeSet?) : RecyclerVi
     }
 
     fun onAdapterItemClick(position: Int) {
-        targetPosition = position
-        smoothScrollToPosition(position)
+        if (position != preScrollToPosition) {
+            preScrollToPosition = position
+            smoothScrollToPosition(position)
+        }
     }
 
     override fun scrollToPosition(position: Int) {
         if (centerSelectTabLayoutAdapter != null && position >= 0 && position < centerSelectTabLayoutAdapter!!.itemCount) {
-            preHighLightPosition = position
+            scrollTargetPosition = position
             val offset = centerX - centerSelectTabLayoutAdapter!!.highLightPosition
             centerSelectLayoutManager.scrollToPositionWithOffset(position, offset)
             val directScrollTotalOffset =
@@ -116,7 +122,7 @@ class CenterSelectTabLayout(context: Context, attrs: AttributeSet?) : RecyclerVi
 
     override fun smoothScrollToPosition(position: Int) {
         if (centerSelectTabLayoutAdapter != null && position >= 0 && position < centerSelectTabLayoutAdapter!!.itemCount) {
-            preHighLightPosition = position
+            scrollTargetPosition = position
             super.smoothScrollToPosition(position)
         }
     }
@@ -126,6 +132,7 @@ class CenterSelectTabLayout(context: Context, attrs: AttributeSet?) : RecyclerVi
             throw IllegalArgumentException("LayoutManager must be CenterSelectLayoutManager")
         } else {
             super.setLayoutManager(layout)
+            centerSelectLayoutManager = layout
         }
     }
 
@@ -135,7 +142,13 @@ class CenterSelectTabLayout(context: Context, attrs: AttributeSet?) : RecyclerVi
         } else {
             layoutManager = centerSelectLayoutManager
             super.setAdapter(adapter)
+            centerSelectTabLayoutAdapter = adapter
         }
+    }
+
+    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+        super.onSizeChanged(w, h, oldw, oldh)
+        centerX = left + (right - left) / 2
     }
 
     inner class CenterSmoothScroller(context: Context) : LinearSmoothScroller(context) {
@@ -149,7 +162,6 @@ class CenterSelectTabLayout(context: Context, attrs: AttributeSet?) : RecyclerVi
         ): Int {
             //首部的几个item可能无法滚动到recyclerView中心位置
             return if (totalOffsetX + viewEnd < boxStart + (boxEnd - boxStart) / 2) {
-                preHighLightPosition = -1
                 0
             } else {
                 boxStart + (boxEnd - boxStart) / 2 - (viewStart + (viewEnd - viewStart) / 2)
@@ -170,6 +182,5 @@ class CenterSelectTabLayout(context: Context, attrs: AttributeSet?) : RecyclerVi
             smoothScroller.targetPosition = position
             startSmoothScroll(smoothScroller)
         }
-
     }
 }
