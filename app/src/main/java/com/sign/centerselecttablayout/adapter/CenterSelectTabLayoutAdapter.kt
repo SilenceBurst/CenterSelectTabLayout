@@ -19,8 +19,14 @@ abstract class CenterSelectTabLayoutAdapter() :
             notifyDataSetChanged()
         }
 
+    /**
+     * Return half of select Tab width px
+     */
     abstract fun getHalfOfSelectTabWidth(): Int
 
+    /**
+     * Return total offset of scrollTo the position
+     */
     abstract fun getDirectScrollTotalOffset(): Int
 
     open class CenterSelectTabLayoutListener(
