@@ -1,6 +1,7 @@
 # CenterSelectTabLayout
 
 **Screens**
+
 ![](https://github.com/SilenceBurst/CenterSelectTabLayout/blob/master/gif/example.gif)
 
 **Features**
@@ -8,6 +9,8 @@
 - after scroll, select tab in the center of layout
 
 **Usage**
+
+CenterSelectTabLayout is extend RecyclerView, CenterSelectTabLayoutAdapter is extend RecyclerView.Adapter, easy to use.
 
 - init view
 ```
