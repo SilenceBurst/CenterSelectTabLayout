@@ -12,6 +12,10 @@
 
 CenterSelectTabLayout is extend RecyclerView, CenterSelectTabLayoutAdapter is extend RecyclerView.Adapter, easy to use.
 
+```
+implementation 'com.sign.centerselecttablayout:centerselecttablayout:1.0.1'
+```
+
 - init view
 ```
 <com.sign.centerselecttablayout.view.CenterSelectTabLayout

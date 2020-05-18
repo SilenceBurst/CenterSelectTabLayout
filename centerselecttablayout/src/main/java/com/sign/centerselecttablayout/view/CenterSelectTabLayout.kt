@@ -38,7 +38,7 @@ class CenterSelectTabLayout(context: Context, attrs: AttributeSet?) : RecyclerVi
                 super.onScrolled(recyclerView, dx, dy)
                 if (dx != 0) {
                     if (scrollState == SCROLL_STATE_DRAGGING) {
-                        //如果用户打断滚动 将目标滚动下标重置
+                        //if user intercept scroll, reset target position
                         if (scrollTargetPosition != -1) {
                             scrollTargetPosition = -1
                         }
